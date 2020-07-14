@@ -1,0 +1,388 @@
+---
+title: "Higher Temperatures lead to Masting Years"
+author: "Justin Beslity"
+date: "August 3, 2019"
+output: 
+  ioslides_presentation:
+    widescreen: true
+  
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+getwd()
+```
+
+##Packages
+```{r echo=F}
+library(tidyverse)
+library(zoo)
+library(lubridate)
+library(anchors)
+```
+
+
+```{r echo=F}
+weather <- read.csv("../data_raw/atmos.csv",  header = T)
+
+NCDC <- read.csv("../data_raw/NCDC_data.csv", header = T)
+Newcomb <- NCDC[which(NCDC$NAME == "NEWCOMB, NY US"),]
+
+weather$Tavg <- (weather$TMAX+weather$TMIN)/2
+Newcomb$Tavg <- (Newcomb$TMAX+Newcomb$TMIN)/2
+```
+
+
+##Break Weather into seasons
+```{r echo= F}
+
+Newcomb$quarter <- as.yearqtr(as.yearmon(Newcomb$DATE, "%Y-%m-%d") + 1/12)
+Newcomb$seasons <- factor(format(Newcomb$quarter, "%q"), levels = 1:4, 
+                labels = c("winter", "spring", "summer", "fall"))
+
+```
+
+
+##Aggregate average temperature for the growing season
+```{r echo =F}
+w_grow <- Newcomb[which(Newcomb$seasons == "summer"),]
+w_grow$YEAR <- year(w_grow$DATE)
+
+w_grow_y_avg <- aggregate(w_grow$Tavg ~ w_grow$YEAR, FUN = "mean")
+w_grow_y_max <- aggregate(w_grow$TMAX ~ w_grow$YEAR, FUN = "mean")
+w_grow_y_pre <- aggregate(w_grow$PRCP ~ w_grow$YEAR, FUN = "sum")
+```
+
+
+
+##dT Methods
+```{r}
+for(i in seq(1:nrow(w_grow_y_avg))){
+w_grow_y_avg[i+2,3] <- w_grow_y_avg[i+1,2] - w_grow_y_avg[i,2]
+}
+
+for(i in seq(1:nrow(w_grow_y_max))){
+w_grow_y_max[i+2,3] <- w_grow_y_max[i+1,2] - w_grow_y_max[i,2]
+}
+
+colnames(w_grow_y_avg) <- c("year", "MeanAvgTemp", "avg_dT_C")
+colnames(w_grow_y_max) <- c("year", "MeanMaxTemp", "max_dT_C")
+
+```
+
+
+#Trim weather data to match seed data
+```{r echo=F}
+w_grow_y_avg <- w_grow_y_avg[-c(1:4),]
+w_grow_y_avg <- w_grow_y_avg[-c(32:34),]
+
+w_grow_y_max <- w_grow_y_max[-c(1:4),]
+w_grow_y_max <- w_grow_y_max[-c(32:34),]
+
+w_grow_y_pre_cur <- w_grow_y_pre[-c(1:29),]
+w_grow_y_pre_cur <- w_grow_y_pre_cur[-c(32),]
+
+#Previous Year Precip
+w_grow_y_pre_prev <- w_grow_y_pre[-c(1:28),]
+w_grow_y_pre_prev <- w_grow_y_pre_prev[-c(32:33),]
+
+colnames(w_grow_y_pre_cur) <- c("Year", "Precip_in")
+colnames(w_grow_y_pre_prev) <- c("Year", "Precip_prev_in")
+
+
+write.csv(w_grow_y_avg, "../data_processed/2dT_avgDailyTemps.csv")
+write.csv( w_grow_y_max, "../data_processed/2dT_MaxDailyTemps.csv")
+        
+
+```
+
+
+##Bird Temp Data (Not important right now)
+```{r, echo=F}
+w_t <- weather[which(weather$MONTH == 4 & 5 & 6), ]
+
+w_t_avg <- aggregate(w_t$Tavg ~ w_t$YEAR, FUN = "mean")
+colnames(w_t_avg) <- c("year", "Tavg_C")
+
+w_t_max <- aggregate(w_t$TMAX ~ w_t$YEAR, FUN = "mean")
+colnames(w_t_max) <- c("year", "Tmax_C")
+
+write.csv(w_t_avg, "bird_temp_AMJ.csv")
+write.csv(w_t_max, "bird_temp_maxDaily_AMJ.csv")
+
+
+```
+
+
+##Aggregate Seed Data by tree type
+```{r eval = T, echo=F}
+seed <- read.csv("../data_raw/Seed_data.csv", header = TRUE)
+
+seed_SUMA <- aggregate(seed$SUMA_TOTAL ~ seed$YEAR, FUN = "sum")
+seed_AMBE <- aggregate(seed$AMBE_TOTAL ~ seed$YEAR, FUN = "sum")
+
+ltm_suma <- mean(seed_SUMA$`seed$SUMA_TOTAL`)
+ltm_ambe <- mean(seed_AMBE$`seed$AMBE_TOTAL`)
+
+sd_suma <- sd(seed_SUMA$`seed$SUMA_TOTAL`)
+sd_ambe <- sd(seed_AMBE$`seed$AMBE_TOTAL`)
+
+seed_SUMA$dev <- (seed_SUMA$`seed$SUMA_TOTAL` - ltm_suma) / sd_suma
+seed_AMBE$dev <- (seed_AMBE$`seed$AMBE_TOTAL` - ltm_ambe) / sd_ambe
+
+thresh_suma <- -mean(seed_SUMA$dev[which(seed_SUMA$dev < 0)])
+thresh_ambe <- -mean(seed_AMBE$dev[which(seed_AMBE$dev < 0)])
+
+colnames(seed_SUMA) <- c("YEAR", "COUNT", "DEV")
+colnames(seed_AMBE) <- c("YEAR", "COUNT", "DEV")
+```
+
+
+##Determining Sugar Maple Mast years
+```{r eval=T, echo=F}
+plot(seed_SUMA$YEAR, seed_SUMA$DEV, ylab = "", xlab = "")
+abline(h = thresh_suma)
+mtext("Annual Standardized Deviation", side = 2, line = 2.5)
+mtext("Year", side = 1, line = 2.5)
+mtext("Sugar Maple", side = 3, line = 1, cex = 1.5)
+
+```
+
+
+##Determining American Beech Mast years
+```{r eval=T, echo=F}
+plot(seed_AMBE$YEAR, seed_AMBE$DEV, ylab = "", xlab = "")
+abline(h = thresh_ambe)
+mtext("Annual Standardized Deviation", side = 2, line = 2.5)
+mtext("Year", side = 1, line = 2.5)
+mtext("American Beech", side = 3, line = 1, cex = 1.5)
+
+```
+
+##Combining weather data and removing Post Mast years
+```{r eval = T, echo=F}
+
+seed_AMBE <- cbind(seed_AMBE, w_grow_y_avg, w_grow_y_max, w_grow_y_pre_cur, w_grow_y_pre_prev)
+seed_AMBE <- seed_AMBE[,-c(4,7)]
+
+seed_SUMA <- cbind(seed_SUMA, w_grow_y_avg, w_grow_y_max, w_grow_y_pre_cur, w_grow_y_pre_prev)
+seed_SUMA <- seed_SUMA[,-c(4,7)]
+
+suma_cor <- cor(seed_SUMA$COUNT, seed_SUMA$avg_dT_C)
+AMBE_cor <- cor(seed_AMBE$COUNT, seed_AMBE$avg_dT_C)
+
+mast_y_suma <- seed_SUMA$YEAR[which(seed_SUMA$DEV > thresh_suma)]
+post_mast_suma <- mast_y_suma+1
+seed_SUMA_trim <- filter(seed_SUMA, !(YEAR %in% post_mast_suma))
+
+mast_y_ambe <- seed_AMBE$YEAR[which(seed_AMBE$DEV > thresh_ambe)]
+post_mast_ambe <- mast_y_ambe+1
+seed_AMBE_trim <- filter(seed_AMBE, !(YEAR %in% post_mast_ambe))
+
+
+```
+
+## 1a) Sugar Maple seed count w/ post mast years mean average daily temperature
+```{r eval=T, echo=F}
+SUMA_a_lm <- lm(seed_SUMA$COUNT ~ seed_SUMA$avg_dT_C)
+summary(SUMA_a_lm)
+plot(seed_SUMA$avg_dT_C, seed_SUMA$COUNT, ylab = "", xlab = "")
+abline(a = 194.64, b = 62.02)
+legend(legend = "adj r2 = 0.32", "topleft", cex = 1.2, bty = "n")
+mtext("Differential Temperature (C)", side = 1, line = 2.5 )
+mtext("Seed Count", side = 2, line = 2.5 )
+mtext("Sugar Maple", side = 3, line = 1, cex = 1.5)
+
+```
+
+
+## 1b) American Beech seed count w/ post mast years mean average daily temperaure
+```{r eval = T, echo=F}
+AMBE_a_lm <- lm(seed_AMBE$COUNT ~ seed_AMBE$avg_dT_C)
+summary(AMBE_a_lm)
+plot(seed_AMBE$avg_dT_C, seed_AMBE$COUNT, ylab = "", xlab = "")
+abline(a = 46.22, b = 12.64)
+legend(legend = "adj r2 = 0.34", "topleft", cex = 1.2, bty = "n")
+mtext("Differential Temperature (C)", side = 1, line = 2.5 )
+mtext("Seed Count", side = 2, line = 2.5 )
+mtext("American Beech", side = 3, line = 1, cex = 1.5)
+```
+
+
+## 2a) Sugar Maple seed count w/ post mast years mean maximum daily temperature
+```{r eval=T, echo=F}
+SUMA_m_lm <- lm(seed_SUMA$COUNT ~ seed_SUMA$max_dT_C)
+summary(SUMA_m_lm)
+plot(seed_SUMA$avg_dT_C, seed_SUMA$COUNT, ylab = "", xlab = "")
+abline(a = 194.64, b = 62.02)
+legend(legend = "adj r2 = 0.39", "topleft", cex = 1.2, bty = "n")
+mtext("Differential Temperature (C)", side = 1, line = 2.5 )
+mtext("Seed Count", side = 2, line = 2.5 )
+mtext("Sugar Maple", side = 3, line = 1, cex = 1.5)
+
+```
+
+
+## 2b) American Beech seed count w/ post mast years mean maximum daily temperaure
+```{r eval = T, echo=F}
+AMBE_m_lm <- lm(seed_AMBE$COUNT ~ seed_AMBE$max_dT_C)
+summary(AMBE_m_lm)
+plot(seed_AMBE$avg_dT_C, seed_AMBE$COUNT, ylab = "", xlab = "")
+abline(a = 46.22, b = 12.64)
+legend(legend = "adj r2 = 0.41", "topleft", cex = 1.2, bty = "n")
+mtext("Differential Temperature (C)", side = 1, line = 2.5 )
+mtext("Seed Count", side = 2, line = 2.5 )
+mtext("American Beech", side = 3, line = 1, cex = 1.5)
+```
+
+
+
+## 3a) Sugar Maple seed count w/o post mast years mean average daily temperatures
+```{r}
+SUMA_t_a_lm <- lm(seed_SUMA_trim$COUNT ~ seed_SUMA_trim$avg_dT_C)
+summary(SUMA_t_a_lm)
+plot(seed_SUMA_trim$avg_dT_C, seed_SUMA_trim$COUNT, ylab = "", xlab = "")
+abline(a = 169.21, b = 91.24)
+legend(legend = "adj r2 = 0.3", "topleft", cex = 1.2, bty = "n")
+mtext("Differential Temperature (C)", side = 1, line = 2.5 )
+mtext("Seed Count", side = 2, line = 2.5 )
+mtext("Sugar Maple", side = 3, line = 1, cex = 1.5)
+
+```
+
+
+# 3b) American Beech seed count w/o post mast years mean average daily temperatures
+```{r eval = T, echo=F}
+AMBE_t_a_lm <- lm(seed_AMBE_trim$COUNT ~ seed_AMBE_trim$avg_dT_C)
+summary(AMBE_t_a_lm)
+plot(seed_AMBE_trim$avg_dT_C, seed_AMBE_trim$COUNT, ylab = "", xlab = "")
+abline(a = 46.22, b = 12.64)
+legend(legend = "adj r2 = 0.34", "topleft", cex = 1.2, bty = "n")
+mtext("Differential Temperature (C)", side = 1, line = 2.5 )
+mtext("Seed Count", side = 2, line = 2.5 )
+mtext("American Beech", side = 3, line = 1, cex = 1.5)
+```
+
+
+## 4a) Sugar Maple seed count w/o post mast years mean maximum daily temperatures
+```{r}
+SUMA_t_m_lm <- lm(seed_SUMA_trim$COUNT ~ seed_SUMA_trim$max_dT_C)
+summary(SUMA_t_m_lm)
+plot(seed_SUMA_trim$max_dT_C, seed_SUMA_trim$COUNT, ylab = "", xlab = "")
+abline(a = 169.21, b = 91.24)
+legend(legend = "adj r2 = 0.47", "topleft", cex = 1.2, bty = "n")
+mtext("Differential Temperature (C)", side = 1, line = 2.5 )
+mtext("Seed Count", side = 2, line = 2.5 )
+mtext("Sugar Maple", side = 3, line = 1, cex = 1.5)
+
+```
+
+
+# 4b) American Beech seed count w/o post mast years mean maximum daily temperatures
+```{r eval = T, echo=F}
+AMBE_t_m_lm <- lm(seed_AMBE_trim$COUNT ~ seed_AMBE_trim$max_dT_C)
+summary(AMBE_t_m_lm)
+plot(seed_AMBE_trim$max_dT_C, seed_AMBE_trim$COUNT, ylab = "", xlab = "")
+abline(a = 46.22, b = 12.64)
+legend(legend = "adj r2 = 0.42", "topleft", cex = 1.2, bty = "n")
+mtext("Differential Temperature (C)", side = 1, line = 2.5 )
+mtext("Seed Count", side = 2, line = 2.5 )
+mtext("American Beech", side = 3, line = 1, cex = 1.5)
+```
+
+
+## 5a) Sugar Maple seed count w/o post mast years mean maximum daily temperatures + PRECIP of current year
+```{r}
+SUMA_t_m_lm <- lm(seed_SUMA_trim$COUNT ~ seed_SUMA_trim$max_dT_C + seed_SUMA_trim$Precip_in)
+summary(SUMA_t_m_lm)
+plot(seed_SUMA_trim$max_dT_C, seed_SUMA_trim$COUNT, ylab = "", xlab = "")
+abline(a = 169.21, b = 91.24)
+legend(legend = "adj r2 = 0.45", "topleft", cex = 1.2, bty = "n")
+mtext("Differential Temperature (C)", side = 1, line = 2.5 )
+mtext("Seed Count", side = 2, line = 2.5 )
+mtext("Sugar Maple", side = 3, line = 1, cex = 1.5)
+
+```
+
+
+# 5b) American Beech seed count w/o post mast years mean maximum daily temperatures + PRECIP of current year
+```{r eval = T, echo=F}
+AMBE_t_m_lm <- lm(seed_AMBE_trim$COUNT ~ seed_AMBE_trim$max_dT_C + seed_AMBE_trim$Precip_in)
+summary(AMBE_t_m_lm)
+plot(seed_AMBE_trim$max_dT_C, seed_AMBE_trim$COUNT, ylab = "", xlab = "")
+legend(legend = "adj r2 = 0.52", "topleft", cex = 1.2, bty = "n")
+mtext("Differential Temperature (C)", side = 1, line = 2.5 )
+mtext("Seed Count", side = 2, line = 2.5 )
+mtext("American Beech", side = 3, line = 1, cex = 1.5)
+
+res_AMBE_t_m_lm <- residuals(AMBE_t_m_lm)
+qqnorm(res_AMBE_t_m_lm)
+qqline(res_AMBE_t_m_lm)
+```
+
+## 6a) Sugar Maple seed count w/o post mast years mean maximum daily temperatures + PRECIP of previous year
+```{r}
+SUMA_t_m_lm <- lm(seed_SUMA_trim$COUNT ~ seed_SUMA_trim$max_dT_C + seed_SUMA_trim$Precip_prev_in)
+summary(SUMA_t_m_lm)
+plot(seed_SUMA_trim$max_dT_C, seed_SUMA_trim$COUNT, ylab = "", xlab = "")
+abline(a = 169.21, b = 91.24)
+legend(legend = "adj r2 = 0.48", "topleft", cex = 1.2, bty = "n")
+mtext("Differential Temperature (C)", side = 1, line = 2.5 )
+mtext("Seed Count", side = 2, line = 2.5 )
+mtext("Sugar Maple", side = 3, line = 1, cex = 1.5)
+
+res_SUMA_t_m_lm <- residuals(SUMA_t_m_lm)
+qqnorm(res_SUMA_t_m_lm)
+qqline(res_SUMA_t_m_lm)
+
+```
+
+
+# 6b) American Beech seed count w/o post mast years mean maximum daily temperatures + PRECIP of previous year
+```{r eval = T, echo=F}
+AMBE_t_m_lm <- lm(seed_AMBE_trim$COUNT ~ seed_AMBE_trim$max_dT_C + seed_AMBE_trim$Precip_prev_in)
+summary(AMBE_t_m_lm)
+plot(seed_AMBE_trim$max_dT_C, seed_AMBE_trim$COUNT, ylab = "", xlab = "")
+abline(a = 46.22, b = 12.64)
+legend(legend = "adj r2 = 0.40", "topleft", cex = 1.2, bty = "n")
+mtext("Differential Temperature (C)", side = 1, line = 2.5 )
+mtext("Seed Count", side = 2, line = 2.5 )
+mtext("American Beech", side = 3, line = 1, cex = 1.5)
+```
+
+# 7) ln(American Beech seed count) w/o post mast years mean maximum daily temperatures + PRECIP of current year
+```{r eval = T, echo=F}
+lnAMBE_t_m_lm <- lm(log(seed_AMBE_trim$COUNT) ~ seed_AMBE_trim$max_dT_C + seed_AMBE_trim$Precip_in)
+summary(lnAMBE_t_m_lm)
+plot(seed_AMBE_trim$max_dT_C, log(seed_AMBE_trim$COUNT), ylab = "", xlab = "")
+legend(legend = "adj r2 = 0.62", "topleft", cex = 1.2, bty = "n")
+mtext("Differential Temperature (C)", side = 1, line = 2.5 )
+mtext("Seed Count", side = 2, line = 2.5 )
+mtext("American Beech", side = 3, line = 1, cex = 1.5)
+
+res_lnAMBE_t_m_lm <- residuals(lnAMBE_t_m_lm)
+qqnorm(res_lnAMBE_t_m_lm)
+qqline(res_lnAMBE_t_m_lm)
+
+```
+
+## 8) ln(Sugar Maple seed count) w/o post mast years mean maximum daily temperatures + PRECIP of previous year
+```{r}
+#Gotta change 0's to 1
+lnSUMA <- seed_SUMA_trim
+lnSUMA[13,2] <- 1
+lnSUMA[24,2] <- 1
+
+lnSUMA_t_m_lm <- lm(log(lnSUMA$COUNT) ~ lnSUMA$max_dT_C + lnSUMA$Precip_prev_in)
+summary(lnSUMA_t_m_lm)
+plot(seed_SUMA_trim$max_dT_C, log(seed_SUMA_trim$COUNT), ylab = "", xlab = "")
+legend(legend = "adj r2 = 0.37", "topleft", cex = 1.2, bty = "n")
+mtext("Differential Temperature (C)", side = 1, line = 2.5 )
+mtext("Seed Count", side = 2, line = 2.5 )
+mtext("Sugar Maple", side = 3, line = 1, cex = 1.5)
+
+res_lnSUMA_t_m_lm <- residuals(lnSUMA_t_m_lm)
+qqnorm(res_lnSUMA_t_m_lm)
+qqline(res_lnSUMA_t_m_lm)
+
+```
