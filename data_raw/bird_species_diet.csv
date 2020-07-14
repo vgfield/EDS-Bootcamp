@@ -1,0 +1,102 @@
+four_code,english_name,latin_name,six_code,diet
+UNKN,Unknown,,,
+ALFL,Alder Flycatcher,Empidonax alnorum,EMPALN,Insectivore
+AMCR,American Crow,Corvus brachyrhynchos,CORBRA,Omnivore
+AMGO,American Goldfinch,Spinus tristis,SPITRI,Granivore
+AMRE,American Redstart,Setophaga ruticilla,SETRUT,Insectivore
+AMRO,American Robin,Turdus migratorius,TURMIG,Omnivore
+ATSP,American Tree Sparrow,Spizelloides arborea,SPIARB,Granivore
+BADO,Barred Owl,Strix varia,STRVAR,Carnivore
+BEKI,Belted Kingfisher,Megaceryle alcyon,MEGALC,Carnivore
+BAWW,Black-and-white Warbler,Mniotilta varia,MNIVAR,Insectivore
+BCCH,Black-capped Chickadee,Poecile atricapillus,POEATR,Insectivore
+BTGN,Black-tailed Gnatcatcher,Polioptila melanura,POLMEL,Insectivore
+BTBW,Black-throated Blue Warbler,Setophaga caerulescens,SETCAE,Insectivore
+BTNW,Black-throated Green Warbler,Setophaga virens,SETVIR,Insectivore
+BLBW,Blackburnian Warbler,Setophaga fusca,SETFUS,Insectivore
+BLPW,Blackpoll Warbler,Setophaga striata,SETSTR,Insectivore
+BHVI,Blue-headed Vireo,Vireo solitarius,VIRSOL,Insectivore
+BLJA,Blue Jay,Cyanocitta cristata,CYACRI,Insectivore
+BOCH,Boreal Chickadee,Poecile hudsonicus,POEHUD,Granivore
+BWHA,Broad-winged Hawk,Buteo platypterus,BUTPLT,Carnivore
+BHCO,Brown-headed Cowbird,Molothrus ater,MOLATE,Granivore
+BRCR,Brown Creeper,Certhia americana,CERAME,Insectivore
+CANG,Canada Goose,Branta canadensis,BRACAN,Omnivore
+CAWA,Canada Warbler,Cardellina canadensis,CADCAN,Insectivore
+CEDW,Cedar Waxwing,Bombycilla cedrorum,BOMCED,Granivore
+CERW,Cerulean Warbler,Setophaga cerulea,SETCER,Insectivore
+CSWA,Chestnut-sided Warbler,Setophaga pensylvanica,SETPEN,Insectivore
+CHSW,Chimney Swift,Chaetura pelagica,CHAPEL,Insectivore
+CHSP,Chipping Sparrow,Spizella passerina,SPIPAS,Granivore
+COGR,Common Grackle,Quiscalus quiscula,QUIQUI,Omnivore
+COLO,Common Loon,Gavia immer,GAVIMM,Carnivore
+CORA,Common Raven,Corvus corax,CORCOX,Omnivore
+COYE,Common Yellowthroat,Geothlypis trichas,GEOTRI,Insectivore
+DEJU,Dark-eyed Junco,Junco hyemalis,JUNHYE,Granivore
+DOWO,Downy Woodpecker,Picoides pubescens,PICPUB,Insectivore
+EAKI,Eastern Kingbird,Tyrannus tyrannus,TYRTYR,Omnivore
+EAPH,Eastern Phoebe,Sayornis phoebe,SAYPHO,Insectivore
+EAWP,Eastern Wood-Pewee,Contopus virens,CONVIR,Insectivore
+EVGR,Evening Grosbeak,Coccothraustes vespertinus,COCVES,Omnivore
+FISP,Field Sparrow,Spizella pusilla,SPIPUS,Omnivore
+GCKI,Golden-crowned Kinglet,Regulus satrapa,REGSAT,Insectivore
+GRCA,Gray Catbird,Dumetella carolinensis,DUMCAR,Omnivore
+GBHE,Great Blue Heron,Ardea herodias,ARDHER,Carnivore
+GCFL,Great Crested Flycatcher,Myiarchus crinitus,MYICRI,Insectivore
+HAWO,Hairy Woodpecker,Picoides villosus,PICVIL,Omnivore
+HETH,Hermit Thrush,Catharus guttatus,CATGUT,Insectivore
+INBU,Indigo Bunting,Passerina cyanea,PASCYA,Insectivore
+LEFL,Least Flycatcher,Empidonax minimus,EMPMIN,Insectivore
+MAWA,Magnolia Warbler,Setophaga magnolia,SETMAG,Insectivore
+MALL,Mallard,Anas platyrhynchos,ANAPLA,Omnivore
+MODO,Mourning Dove,Zenaida macroura,ZENMAC,Granivore
+MOWA,Mourning Warbler,Geothlypis philadelphia,GEOPHI,Insectivore
+NAWA,Nashville Warbler,Oreothlypis ruficapilla,ORERUF,Insectivore
+NOFL,Northern Flicker,Colaptes auratus,COLAUT,Insectivore
+NOPA,Northern Parula,Setophaga americana,SETAME,Insectivore
+NSWO,Northern Saw-whet Owl,Aegolius acadicus,AEGACA,Carnivore
+NOWA,Northern Waterthrush,Parkesia noveboracensis,PARNOV,Insectivore
+OSFL,Olive-sided Flycatcher,Contopus cooperi,CONCOO,Insectivore
+OSPR,Osprey,Pandion haliaetus,PANHAL,Carnivore
+OVEN,Ovenbird,Seiurus aurocapilla,SEIAUR,Insectivore
+PAWA,Palm Warbler,Setophaga palmarum,SETPAL,Insectivore
+PHVI,Philadelphia Vireo,Vireo philadelphicus,VIRPHI,Insectivore
+PBGR,Pied-billed Grebe,Podilymbus podiceps,PODPOD,Carnivore
+PIWO,Pileated Woodpecker,Dryocopus pileatus,DRYPIL,Insectivore
+PISI,Pine Siskin,Spinus pinus,SPIPIN,Granivore
+PUFI,Purple Finch,Haemorhous purpureus,HAEPUR,Granivore
+PUMA,Purple Martin ,Progne subis,PROSUB,Insectivore 
+RBNU,Red-breasted Nuthatch,Sitta canadensis,SITCAN,Omnivore
+REVI,Red-eyed Vireo,Vireo olivaceus,VIROLI,Insectivore 
+RWBL,Red-winged Blackbird,Agelaius phoeniceus,AGEPHO,Omnivore
+RBGR,Rose-breasted Grosbeak,Pheucticus ludovicianus,PHELUD,Omnivore
+RCKI,Ruby-crowned Kinglet,Regulus calendula,REGCAL,Insectivore
+RTHU,Ruby-throated Hummingbird,Archilochus colubris,ARCCOL,Nectivore
+RUGR,Ruffed Grouse,Bonasa umbellus,BONUMB,Granivore
+RSTO,Rufous-sided Towhee,Pipilo maculatus/erythr,PIPMAE,Omnivore
+SCTA,Scarlet Tanager,Piranga olivacea,PIROLI,Insectivore
+SOSP,Song Sparrow,Melospiza melodia,MELMEL,Omnivore
+SWTH,Swainson's Thrush,Catharus ustulatus,CATUST,Omnivore
+SWSP,Swamp Sparrow,Melospiza georgiana,MELGEO,Insectivore
+TEWA,Tennessee Warbler,Oreothlypis peregrina,OREPER,Insectivore
+TRES,Tree Swallow,Tachycineta bicolor,TACBIC,Insectivore
+UNDU,Unidentified Duck,"Anatinae (gen, sp)",ANAGSP,Omnivore
+UNTH,Unidentified Thrush ,"Turdidae (gen, sp)",TURGSP,Omnivore
+UNWA,Unidentified Warbler,"Parulidae (gen, sp)",PARGSP,Insectivore
+UNWO,Unidentified Woodpecker,"Picinae (gen, sp)",PICGSP,Insectivore
+VEER,Veery,Catharus fuscescens,CATFUN,Omnivore
+WAVI,Warbling Vireo,Vireo gilvus,VIRGIL,Insectivore
+WBNU,White-breasted Nuthatch,Sitta carolinensis,SITCAR,Granivore
+WCSP,White-crowned Sparrow,Zonotrichia leucophrys,ZONLEU,Omnivore
+WTSP,White-throated Sparrow,Zonotrichia albicollis,ZONALB,Omnivore
+WISN,Wilson's Snipe,Gallinago delicata,GALDEL,Insectivore
+WIWR,Winter Wren,Troglodytes hiemalis,TROHIE,Insectivore
+WODU,Wood Duck,Aix sponsa,AIXSPO,Omnivore
+WOTH,Wood Thrush,Hylocichla mustelina,HYLMUS,Omnivore
+WEWA,Worm-eating Warbler,Helmitheros vermivorum,HELVER,Insectivore
+YBFL,Yellow-bellied Flycatcher,Empidonax flaviventris,EMPFLT,Insectivore
+YBSA,Yellow-bellied Sapsucker,Sphyrapicus varius,SPHVAR,Nectivore
+YRWA,Yellow-rumped Warbler,Setophaga coronata,SETCOR,Insectivore
+YTVI,Yellow-throated Vireo,Vireo flavifrons,VIRFLF,Insectivore
+YTWA,Yellow-throated Warbler,Setophaga dominica,SETDOM,Insectivore
+YEWA,Yellow Warbler,Setophaga petechia,SETPET,Insectivore

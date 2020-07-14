@@ -1,0 +1,207 @@
+---
+title: "EDS_Birds"
+author: "Victoria_Field"
+date: "8/2/2019"
+output:
+  ioslides_presentation:
+    incremental: true
+    smaller: true
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(car)
+```
+
+# Migratory Birds (1984-2008)
+
+## Project Background
+
+-bird counts (5-6) were conducted in early June annually on 4 unlimited- radius plots per site on 4 sites
+
+-intent was to compare forest management types between seedling-sapling hardwood (Maple Sale), sapling-pole hardwood (Sucker Brook), large pole-small sawtimber mixed (Adjidaumo) (1983-86), red spruce (Picea rubens) pole (Hare Area), and old-growth hardwood (Natural Area) stands
+
+## Read in Birds Data 
+
+```{r, echo=FALSE}
+Birds<-read.csv("../data_raw/ALTEMP2_Songbirds_1952_2017.csv", header=TRUE)
+```
+
+```{r, echo=TRUE}
+str(Birds)
+```
+
+## Read in Species Names
+
+```{r}
+Species<-read.csv("bird_species_diet.csv", header=TRUE, na.strings=c("", " "), strip.white=TRUE)
+colnames(Species)[colnames(Species)=="four_code"] <- "species"
+```
+
+## Add full name and diet guild to species
+
+```{r}
+#diet reflects primary feeding guild in summertime (taken from Birds of North America; Cornell Lab of Ornithology)  
+Birds<-merge(Birds, Species, by="species", all.x = TRUE)
+```
+
+# Bird data exploration 
+
+## Summary
+
+```{r}
+colnames(Birds)[3]<-"YEAR"
+summary(Birds)
+```
+
+## Descriptions
+
+```{r, echo=FALSE, eval=TRUE, warning=FALSE}
+library(Hmisc)
+Birds.desc<-describe(Birds)
+```
+
+
+```{r, echo=FALSE, eval=TRUE}
+print(Birds.desc)
+```
+
+# Data summaries and plots
+
+## Aggregating the data
+
+```{r}
+B_year_area<-aggregate(count~YEAR+area, Birds, FUN=sum)
+B_year_diet<-aggregate(count~YEAR+diet, Birds, FUN=sum)
+B_year<-aggregate(count~YEAR, Birds, FUN=sum)
+```
+
+## Counts by area
+
+```{r, echo=FALSE, eval=TRUE}
+ggplot(B_year_area, aes(x=YEAR, y=count))+
+  geom_point(aes(x=YEAR, y=count, color=area))+
+  labs(title="Total counts across all species for each area")+
+  xlab("Year")+
+  theme(axis.text.x = element_text(angle=60, hjust=1))
+  ylab("Total Bird Count")
+```
+
+## Counts by diet
+
+```{r, echo=FALSE, eval=TRUE}
+ggplot(B_year_diet, aes(x=YEAR, y=count))+
+  geom_point(aes(x=YEAR, y=count, color=diet))+
+  labs(title="Total counts for each diet guild")+ 
+  xlab("Year")+
+  theme(axis.text.x = element_text(angle=60, hjust=1))
+  ylab("Total Bird Count")
+```
+
+## Counts by year
+
+```{r, echo=FALSE, eval=TRUE}
+ggplot(B_year, aes(x=YEAR, y=count))+
+  geom_point(aes(x=YEAR, y=count))+
+  labs(title="Total counts for each year")+
+  xlab("Year")+
+  theme(axis.text.x = element_text(angle=60, hjust=1))
+  ylab("Total Bird Count")
+```
+
+# Temperature Data 
+
+## Read in 
+
+```{r}
+Temp<-read.csv("../data_raw/atmos.csv")
+Temp$TMEAN<-(Temp$TMAX+Temp$TMIN)/2
+Temp$TDIFF<-(Temp$TMAX-Temp$TMIN)
+```
+
+```{r}
+temp_month<-aggregate(TMEAN~YEAR+MONTH, FUN=mean, data=Temp)
+temp_year<-aggregate(TMEAN~YEAR, FUN=mean, data=Temp)
+```
+
+```{r}
+temp_year_diff<-aggregate(TDIFF~YEAR, FUN=mean, data=Temp)
+```
+
+## Merge birds and temperature 
+
+```{r}
+BirdTemp<-merge(temp_year, B_year, by="YEAR", all = TRUE)
+BirdTemp<-merge(BirdTemp, temp_year_diff, by="YEAR", all =TRUE)
+```
+
+## Plot birds and temperature 
+
+```{r}
+par(mfrow=c(2,1))
+plot(TDIFF~YEAR, BirdTemp)
+plot(count~YEAR, BirdTemp)
+```
+
+```{r}
+birdtemp.lm<-lm(count~TMEAN, BirdTemp)
+plot(count~TMEAN, BirdTemp, xlim=c(38.7,44))
+regLine(birdtemp.lm)
+summary(birdtemp.lm)
+```
+
+```{r}
+birdtempdiff.lm<-lm(count~TDIFF, BirdTemp)
+plot(count~TDIFF, BirdTemp)
+regLine(birdtempdiff.lm)
+summary(birdtempdiff.lm)
+```
+
+# Seed Data
+
+```{r}
+Seed<-read.csv("../data_raw/Seed_data.csv", header=TRUE)
+```
+
+## Create new dataframe grouped by year and season where the sum of each column is computed.
+
+```{r}
+library(dplyr)
+seed_year<-Seed[, -13] %>%
+    group_by(YEAR, SEASON) %>% 
+    summarise_each(funs(sum))
+```
+
+## Create new column with total seed counts and total seed biomass 
+
+```{r}
+seed_year$seed_count<-(seed_year$YEBI_TOTAL+seed_year$SUMA_TOTAL+seed_year$REMA_TOTAL+seed_year$AMBE_TOTAL+seed_year$RESP_TOTAL+seed_year$EAHE_TOTAL+seed_year$NWCE_TOTAL+seed_year$BAFI_TOTAL+seed_year$PABI_TOTAL)
+
+seed_year$seed_biomass<-(seed_year$yebi_biomass+seed_year$suma_biomass+seed_year$rema_biomass+seed_year$ambe_biomass+seed_year$resp_biomass+seed_year$eahe_biomass+seed_year$nwce_biomass+seed_year$bafi_biomass+seed_year$pabi_biomass)
+```
+
+## Extract species of interest only (SUMA and AMBE)
+
+```{r}
+SppSeed<-seed_year[,c(1,2,5,7,14,16)]
+```
+
+## Plot 
+
+## Assemblage Composition 
+
+```{r}
+comp<-aggregate(count~diet+YEAR+area, Birds, FUN=sum)
+comp<-merge(comp, B_year_area, by=c("YEAR", "area"), all.x=TRUE)
+comp$prop<-(comp$count.x/comp$count.y)
+```
+
+```{r}
+ggplot(comp, aes(x=YEAR, y=count.x, group=diet))+
+  geom_col(aes(color=diet, fill=diet))+
+  labs(title="Assemblage Composition by Feeding Guild")+
+  xlab("Year")+
+  theme(axis.text.x = element_text(angle=60, hjust=1))+
+  ylab("Total Bird Count")+
+  facet_wrap(~area)
+```
